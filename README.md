@@ -14,4 +14,5 @@ Everytime you stop working on the project:
 IMPLEMENTED:
 - Client sends multiple messages to server.
 
+REPORT NEEDS TO BE COMPLETED.
 
