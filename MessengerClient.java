@@ -21,6 +21,8 @@ public class MessengerClient {
             BufferedWriter out = new BufferedWriter(new OutputStreamWriter(stringSocket.getOutputStream()));
 
             Scanner scanner = new Scanner(System.in);
+            System.out.println("Welcome to SNSMessenger, please create an account.");
+            System.out.println("First pick a username: ");
 
             while (true){
                 String message = scanner.nextLine();
