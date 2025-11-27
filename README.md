@@ -12,6 +12,7 @@ Everytime you stop working on the project:
 - write down what you've done and anything that isn't working/needs doing here.
 
 IMPLEMENTED:
-- Client sends message to server.
-BROKEN:
-- Server only receives one message then exits
+- Client sends multiple messages to server.
+
+REPORT NEEDS TO BE COMPLETED.
+
