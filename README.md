@@ -14,6 +14,7 @@ Everytime you stop working on the project:
 IMPLEMENTED:
 - Client sends multiple messages to server.
 - Messages are Encrypted.
+
 NEEDS TO BE DONE:
 - Messages currently only print on Client, need to print on Server.
 - Username and Password verification needs to be implemented (partially implemented with query object).
