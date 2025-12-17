@@ -1,40 +1,113 @@
 import java.io.*;
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
+
 public class MessengerClient {
-    public static String sendMessage(DataInputStream input){
-        try {
-            String output = input.toString();
-            return output;
-            
-        } catch (Exception e) {
-            return "Error";
-        }
-    }
-    public static void main(String[] args)throws IOException {
-        String hostName = "localhost"; //args[0];
-        int portNumber = 2000; //Integer.parseInt(args[1]);
 
-        try {
-            Socket stringSocket = new Socket(hostName, portNumber);
-            BufferedReader in = new BufferedReader(new InputStreamReader(stringSocket.getInputStream()));
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(stringSocket.getOutputStream()));
+    public static void main(String[] args) {
+        try (Socket socket = new Socket("localhost", 2000)) {
 
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
+            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), StandardCharsets.UTF_8));
             Scanner scanner = new Scanner(System.in);
-            System.out.println("Welcome to SNSMessenger, please create an account.");
-            System.out.println("First pick a username: ");
 
-            while (true){
-                String message = scanner.nextLine();
-                out.write(message);
-                out.newLine();
-                out.flush(); 
-                if(message.equals("exit")){
+            // Registration prompt from server
+            String regPrompt = in.readLine();
+            if (regPrompt == null) {
+                System.out.println("Server disconnected.");
+                return;
+            }
+            System.out.println("Server: " + decrypt(regPrompt));
+
+            System.out.print("Create username: ");
+            String newUser = scanner.nextLine();
+            System.out.print("Create password: ");
+            String newPass = scanner.nextLine();
+
+            send(out, newUser);
+            send(out, newPass);
+
+            String regReply = in.readLine();
+            if (regReply == null) {
+                System.out.println("Server disconnected after registration.");
+                return;
+            }
+            System.out.println("Server: " + decrypt(regReply));
+
+            // Login loop
+            while (true) {
+                System.out.print("Login username: ");
+                String u = scanner.nextLine();
+                System.out.print("Login password: ");
+                String p = scanner.nextLine();
+
+                send(out, u);
+                send(out, p);
+
+                String resultLine = in.readLine();
+                if (resultLine == null) {
+                    System.out.println("Server disconnected during login.");
+                    return;
+                }
+
+                String result = decrypt(resultLine);
+                if ("LOGIN_OK".equals(result)) {
+                    System.out.println("Logged in!");
                     break;
+                } else {
+                    System.out.println("Invalid username or password. Try again.");
                 }
             }
-        } catch (UnknownHostException e) {
-            System.out.println("Error");
+
+            String afterLogin = in.readLine();
+            if (afterLogin == null) {
+                System.out.println("Server disconnected after login.");
+                return;
+            }
+            System.out.println("Server: " + decrypt(afterLogin));
+
+            // Chat loop (merged fix )
+            while (true) {
+                System.out.print("You: ");
+                String msg = scanner.nextLine();
+
+                // send message
+                send(out, msg);
+
+                // read server response every time
+                String replyLine = in.readLine();
+                if (replyLine == null) {
+                    System.out.println("Server disconnected.");
+                    break;
+                }
+
+                String reply = decrypt(replyLine);
+
+                // If server rejected us (rate limit / blacklist / too long), stop cleanly
+                if (reply.startsWith("ERR")) {
+                    System.out.println("Server: " + reply);
+                    break;
+                }
+
+
+                // System.out.println("Server: " + reply); // usually "DELIVERED"
+
+                if ("exit".equals(msg)) break;
+            }
+
+        } catch (IOException e) {
+            System.out.println("Client error: " + e);
+        }
     }
-}
+
+    private static void send(BufferedWriter out, String plain) throws IOException {
+        out.write(encrypt(plain));
+        out.newLine();
+        out.flush();
+    }
+
+    // Replace with your encryption/decryption
+    private static String encrypt(String s) { return s; }
+    private static String decrypt(String s) { return s; }
 }
