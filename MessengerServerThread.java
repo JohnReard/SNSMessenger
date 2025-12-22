@@ -52,9 +52,7 @@ public class MessengerServerThread extends Thread {
                 out.flush();
                 accountresponse = in.readLine();
                 //accountresponse = in.readLine();
-                out.write("you typed:" + accountresponse);
-                out.newLine();
-                System.out.println("Account response for do you have an acc: " + accountresponse);}
+                }
             //If they do input user and pass
             while(accountresponse != null){
                 System.out.println("loop checking ACCOUNT RESPONSE IS NOT NULL");
