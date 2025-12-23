@@ -8,11 +8,12 @@ public class MessengerClient extends Thread {
     public static final String TRUSTSTORE_LOCATION = "C:\\CA\\ServerKeyStore.jks";
     public static final String TRUSTSTORE_PASSWORD = "password";
     public static String servermessage;
+    private static String loggedinusername;
     public static void main(String[] args)throws IOException {
         System.setProperty("javax.net.ssl.trustStore", TRUSTSTORE_LOCATION);
         System.setProperty("javax.net.ssl.trustStorePassword", TRUSTSTORE_PASSWORD);
         SSLSocketFactory sslfact = (SSLSocketFactory) SSLSocketFactory.getDefault();
-        String hostName = "localhost"; //args[0];
+        String hostName = "192.168.1.98"; //args[0];
         int portNumber = 2000; //Integer.parseInt(args[1]);
         String message = null;
        // String loggedinusername;
@@ -31,8 +32,9 @@ public class MessengerClient extends Thread {
             //System.out.println("First pick a username: ");
             
             MessengerClientThread clientthread = new MessengerClientThread(stringSocket, in);
+            clientthread.start();
             while (true){
-                clientthread.listenServerMessage();
+        
                 message = scanner.nextLine();
                 out.write(message);
                 out.newLine();
@@ -48,7 +50,7 @@ public class MessengerClient extends Thread {
         
             }
         } catch (UnknownHostException e) {
-            System.out.println("Error");
+            System.out.println("Error connecting to socket");
     }
 }
 }

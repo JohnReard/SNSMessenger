@@ -1,5 +1,4 @@
 import java.io.*;
-import java.net.Socket;
 import java.util.*;
 import javax.net.ssl.*;
 //password for key store is password, alias password is password, local city is Birmingham, alias is Server
@@ -7,30 +6,33 @@ import javax.net.ssl.*;
 // got to step 11.
 public class MessengerServerThread extends Thread {
     public static Map<String,String> userandpass = new HashMap<>();
-    public static Boolean loggedin = false;
+    private boolean loggedin = false;
     public static String loggedinusername;
     public static final boolean DEBUG = true;
     public String clientmessage;
+    public BufferedReader in;
+    public BufferedWriter out;
     
-    public SSLServerSocket stringSocket;
+    public SSLSocket acceptedsocket;
     
     
-    public MessengerServerThread(SSLServerSocket stringSocket){
+    public MessengerServerThread(SSLSocket acceptedsocket){
         super();
-        this.stringSocket = stringSocket;
+        this.acceptedsocket = acceptedsocket;
         }
         public void run(){
         alloops:
         while(true){
         try{
+        acceptedsocket.setEnabledProtocols(new String[]{"TLSv1.3", "TLSv1.2"});
+        in = new BufferedReader(new InputStreamReader(acceptedsocket.getInputStream()));
+        out = new BufferedWriter(new OutputStreamWriter(acceptedsocket.getOutputStream()));
         //SSLServerSocket objectSocket = (SSLServerSocket) socketfactory.createServerSocket(portNumber);
-        stringSocket.setEnabledProtocols(new String[]{"TLSv1.3", "TLSv1.2"});
+        
         //objectSocket.setEnabledProtocols(new String[]{"TLSv1.3", "TLSv1.2"});
         //Socket acceptedobjectSocket = objectSocket.accept();
-        Socket acceptedsocket = stringSocket.accept();
        
-        BufferedReader in = new BufferedReader(new InputStreamReader(acceptedsocket.getInputStream()));
-        BufferedWriter out = new BufferedWriter(new OutputStreamWriter(acceptedsocket.getOutputStream()));
+        
         //ObjectOutputStream objout = new ObjectOutputStream(acceptedobjectSocket.getOutputStream());
         //ObjectInputStream objin = new ObjectInputStream(acceptedobjectSocket.getInputStream());
         String username = null;
@@ -50,9 +52,7 @@ public class MessengerServerThread extends Thread {
                 out.flush();
                 accountresponse = in.readLine();
                 //accountresponse = in.readLine();
-                out.write("you typed:" + accountresponse);
-                out.newLine();
-                System.out.println("Account response for do you have an acc: " + accountresponse);}
+                }
             //If they do input user and pass
             while(accountresponse != null){
                 System.out.println("loop checking ACCOUNT RESPONSE IS NOT NULL");
@@ -128,9 +128,7 @@ public class MessengerServerThread extends Thread {
                 System.out.println("LOGGEDIN");
                 if(message != null){
                 System.out.println("Server side message is: "+ message);
-                out.write(loggedinusername + " says: " + message);
-                out.newLine();
-                out.flush();
+                broadcastToClients(username + " says: " + message);
                 }
                 message = in.readLine();
                 System.out.println(message);
@@ -149,6 +147,18 @@ public class MessengerServerThread extends Thread {
         }
         }
     }
+    public void broadcastToClients(String message){
+        for(MessengerServerThread client : MessengerServer.clients){
+            try{
+                client.out.write(message);
+                client.out.newLine();
+                client.out.flush();
+            }catch(IOException e){
+                System.out.println("Error broadcasting message");
+            }
+        }
+    }
+
     //public void listenClientMessage(){
     //new Thread(new Runnable(){
     //@Override

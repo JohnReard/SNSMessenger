@@ -13,15 +13,15 @@ public class MessengerClientThread extends Thread {
         this.in = in;
     }
 
-   public void listenServerMessage(){
-    new Thread(new Runnable(){
-    @Override
+   //public void listenServerMessage(){
+    //new Thread(new Runnable(){
+    //@Override
     public void run(){
 
         while(true){
             try{
             servermessage = in.readLine();
-            if(!stringSocket.isConnected()){
+            if(!stringSocket.isConnected() || servermessage == null){
                 break;
             }
             else{
@@ -33,6 +33,5 @@ public class MessengerClientThread extends Thread {
                 break;
             }    
         }
-    }}).start();
 }
 }
